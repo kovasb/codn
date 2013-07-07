@@ -1,0 +1,491 @@
+^:foo 'a
+(meta ^:foo 'a)
+(symbol "name")
+(use 'codn.parse.core)
+(use 'codn.parse.reader-types)
+(use 'codn.parse.core)
+(use 'codn.parse.ExceptionInfo)
+(use 'codn.parse.core)
+(read-string "(+ 1 2)")
+#".a"
+(class #".a")
+(re-matches  #".a" "aa")
+`(re-matches  #".a" "aa")
+(eval `(re-matches  #".a" "aa"))
+(def x #".a")
+`(re-matches ~x "aa")
+(eval `(re-matches ~x "aa"))
+'@f
+'`d
+'``d
+''d
+'''d
+`(let [a 1] 1)
+`(for [a 1] 1)
+`(fn [x] x)
+`#(+ %)
+(use 'codn.read.core)
+ unquote-splicing?
+(use 'codn.read.core)
+(defn read-codn [expr]
+  (let [fn-slots (atom {})]
+    (prewalk
+     un-syntax-quote
+     (walk #(un-fn-prewalk % fn-slots)
+           (un-fn-postwalk % fn-slots)
+           (postwalk un-edn expr)))))
+(use 'clojure.walk)
+(defn read-codn [expr]
+  (let [fn-slots (atom {})]
+    (prewalk
+     un-syntax-quote
+     (walk #(un-fn-prewalk % fn-slots)
+           (un-fn-postwalk % fn-slots)
+           (postwalk un-edn expr)))))
+(defn read-codn [expr]
+  (let [fn-slots (atom {})]
+    (prewalk
+     un-syntax-quote
+     (walk #(un-fn-prewalk % fn-slots)
+           #(un-fn-postwalk % fn-slots)
+           (postwalk un-edn expr)))))
+(read-codn '{:head :syntax-quote :body  [[a# a# `[a#]]]})
+(defn un-fn-prewalk [x fn-slots]
+  (if (fn? x)
+    (reset! fn-slots {}))
+  x)
+(un-fn-prewalk 1 2)
+(use 'codn.read.core)
+(read-codn '{:head :syntax-quote :body  [[a# a# `[a#]]]})
+'`[a# a# `[a#]]
+(read-codn '{:head :integer :value 1})
+(use 'codn.parse.core)
+(require 'codn.parse.core)
+(codn.parse.core/read-string "#(+ % 1)")
+(read-codn (codn.parse.core/read-string "#(+ % 1)"))
+(codn.parse.core/read-string "#(+ % 1)")
+(postwalk un-edn (codn.parse.core/read-string "#(+ % 1)"))
+(clojure.walk/postwalk un-edn (codn.parse.core/read-string "#(+ % 1)"))
+(require '[codn.read.core :as r])
+(require '[codn.parse.core :as p])
+(p/read-string "#(+ % 1)")
+(r/read-codn (p/read-string "#(+ % 1)"))
+(r/read-codn (p/read-string "#(+ %4 1)"))
+(r/read-codn (p/read-string "(fn [x] x)"))
+(r/read-codn (p/read-string "`[a ~@[1 2 ]]"))
+(eval (r/read-codn (p/read-string "`[a ~@[1 2 ]]")))
+(in-ns 'codn.read.core)
+(defn make-expr [head body]
+  (condp = head
+    :list (apply list body)
+    :vector (vec body)
+    :map (apply hash-map body)
+    :set (set body)
+    :fn (list 'read-fn (first body))
+    :deref (list 'deref (first body))
+    :var-quote nil
+    :quote (list 'quote (first body))
+    :unquote (list 'unquote (first body))
+    :unquote-splicing (list 'clojure.core/unquote-splicing (first body))
+    :syntax-quote (list 'read-syntax-quote* (first body))
+    :read-eval nil
+    :tagged-literal nil
+    :constructor nil
+    :autoresolved-keyword nil
+    :default))
+(in-ns 'user)
+(eval (r/read-codn (p/read-string "`[a ~@[1 2 ]]")))
+(eval (r/read-codn (p/read-string "#(+ 1 %)")))
+ (r/read-codn (p/read-string "#(+ 1 %)"))
+ (r/read-codn (p/read-string "#(+ 1 %2)"))
+ (r/read-codn (p/read-string "#(+ 1 %1)"))
+(in-ns 'codn.read.core)
+(defn remap-arg [fn-slots arg]
+  (let [s (get-slot ({% %1} arg arg))]
+    (if (@fn-slots s)
+     (@fn-slots s)
+     (let [arg2 (garg2 s)] (swap! fn-slots assoc s arg2) arg2))))
+(defn remap-arg [fn-slots arg]
+  (let [s (get-slot ({'% '%1} arg arg))]
+    (if (@fn-slots s)
+     (@fn-slots s)
+     (let [arg2 (garg2 s)] (swap! fn-slots assoc s arg2) arg2))))
+(in-ns 'user)
+(r/read-codn (p/read-string "#(+ 1 %1)"))
+`#(+ 1 %1)
+un-fn-prewalk
+(r/read-codn (p/read-string "#(+ 1 [%1])"))
+(p/read-string "#(+ 1 [%1])")
+(in-ns 'codn.read.core)
+(def expr {:head :fn, :body [{:head :list, :body [{:head :symbol, :value +} {:head :integer, :value 1} {:head :vector, :body [{:head :symbol, :value %1}]}]}]})
+(def expr '{:head :fn, :body [{:head :list, :body [{:head :symbol, :value +} {:head :integer, :value 1} {:head :vector, :body [{:head :symbol, :value %1}]}]}]})
+ (postwalk un-edn expr)
+fn-slots
+(def fn-slots (atom {}))
+(un-fn-prewalk expr fn-slots)
+fn-slots
+(un-fn-postwalk % fn-slots)
+(un-fn-postwalk expr fn-slots)
+(postwalk #(un-fn-postwalk % fn-slots) expr)
+fn-slots
+(defn read-codn [expr]
+  (let [fn-slots (atom {})]
+    (prewalk
+     un-syntax-quote
+     (walk #(un-fn-prewalk % fn-slots)
+           #(un-fn-postwalk % fn-slots)
+           (postwalk un-edn expr)))))
+(read-codn {:head :fn, :body [{:head :list, :body [{:head :symbol, :value +} {:head :integer, :value 1} {:head :vector, :body [{:head :symbol, :value %1}]}]}]})
+(read-codn '{:head :fn, :body [{:head :list, :body [{:head :symbol, :value +} {:head :integer, :value 1} {:head :vector, :body [{:head :symbol, :value %1}]}]}]})
+(postwalk un-edn expr)
+(postwalk #(un-fn-postwalk % fn-slots) expr)
+(postwalk #(un-fn-postwalk % fn-slots) (postwalk un-edn expr))
+(defn read-codn [expr]
+  (let [fn-slots (atom {})]
+    (prewalk
+     un-syntax-quote
+     (postwalk
+           #(un-fn-postwalk % fn-slots)
+           (postwalk un-edn expr)))))
+(read-codn '{:head :fn, :body [{:head :list, :body [{:head :symbol, :value +} {:head :integer, :value 1} {:head :vector, :body [{:head :symbol, :value %1}]}]}]})
+*data-readers*
+(RT/map [:1 1 :2 2])
+(RT/map (to-array [:1 1 :2 2]))
+resolve-ns
+parse-symbol
+(parse-symbol "foo")
+(parse-symbol "f/foo")
+(parse-symbol "::foo")
+(parse-symbol ":foo")
+(parse-symbol ":foo/foo")
+(parse-symbol "::foo")
+(parse-symbol ":foo")
+(parse-symbol "foo/:foo")
+(name :foo)
+'#'foo)
+'#'foo
+(list 'var 'foo)
+regex
+(/ 5 2)
+(apply / [1 2])
+(use '[codn.read.core :as r])
+vec?
+vector?
+(use '[codn.read.core :as r])
+(use '[codn.parse.core :as p])
+(require '[codn.read.core :as r])
+(r/read-string "(+ 1 1)")
+(p/read-string "(+ 1 1)")
+(c/read-dn (p/read-string "(+ 1 1)"))
+(r/read-dn (p/read-string "(+ 1 1)"))
+(r/read-edn (p/read-string "(+ 1 1)"))
+r/read-edn
+(r/read-codn (p/read-string "(+ 1 1)"))
+(r/read-codn (p/read-string "::foo"))
+ (p/read-string "::foo")
+(r/read-codn (p/read-string "#(+ % 1)"))
+(r/read-codn (p/read-string "#(+ % %&)"))
+(p/read-string "^:tag {}")
+(p/read-string "^tag {}")
+(with-meta :tag {})
+(with-meta {:tag 1} {})
+desugar-meta
+(read-string "@f")
+'@f
+(read-string "'f")
+read-string
+(ns codn.reader.reader-test
+  (:use [codn.reader.core :only [read-codn]]
+        [codn.parser.core :only [parse-string]]
+        [clojure.test :only [deftest is]])
+  (:import clojure.lang.BigInt))
+(defn parse-read-string [x]
+  (read-codn (parse-string x)))
+(parse-read-string "@f")
+(do (alias 'core 'clojure.core)
+             (parse-read-string "::core/foo-bar"))
+(parse-read-string "::core/foo-bar")
+(parse-string "::core/foo-bar")
+(parse-string "::foo-bar")
+(use 'codn.parser.core)
+(read-string "::foo/bar")
+(read-string ":foo/bar")
+(read-string "::bar")
+(parse-string ":foo/bar")
+(parse-string "::bar")
+(parse-string "::user/bar")
+(keyword "sadf")
+(namespace :l)
+resolve-ns
+read-string
+(read-string  "`(1 (~2 ~@(3)))")
+(defrecord foo [])
+(defrecord bar [baz buz])
+(foo.)
+(foof.)
+(parse-string "#codn.reader.reader_test.foo[]")
+(parse-string "#user.foo[]")
+(def c (Class/forName (name 'user.foo)))
+foo
+(RT/baseLoader)
+(name 'user.foo)
+(:import (clojure.lang PersistentHashSet IMeta
+                         RT Symbol Reflector Var IObj
+                         PersistentVector IRecord Namespace)
+           java.lang.reflect.Constructor)
+ (:import '(clojure.lang PersistentHashSet IMeta
+                         RT Symbol Reflector Var IObj
+                         PersistentVector IRecord Namespace)
+           java.lang.reflect.Constructor)
+(RT/baseLoader)
+clojure.lang.RT
+(clojure.lang.RT/baseLoader)
+(class foo)
+foo
+(Class/forName "foo")
+(Class/forName "user.foo")
+(def c (Class/forName (name 'user.foo)))
+ (Class/forName (name 'user.foo))
+(def c (Class/forName (name 'user.foo)))
+(Class/forName (name 'user.foo))
+(def c (Class/forName (name 'user.foo)))
+(let [c (Class/forName (name 'user.foo)) c)
+(let [c (Class/forName (name 'user.foo))] c)
+(let [c (Class/forName (name 'user.foo))] (def b c))
+b
+(Reflector/invokeConstructor user.foo (to-array []))
+(clojure.lang.Reflector/invokeConstructor user.foo (to-array []))
+(to-array [])
+(parse-read-string "#codn.reader.reader_test.foo[]")
+(defrecord foo [])
+(foo.)
+(require '[codn.reader.core :as r])
+(require '[codn.parser.core :as p])
+(defrecord foo [])
+(p/parse-string "#user.foo[]")
+(def x (p/parse-string "#user.foo[]"))
+(r/read-codn x)
+(user.foo.)
+(r/read-constructor ['user.foo []])
+(in-ns 'codn.reader.core)
+(defn read-constructor [[class-name value]]
+  (println [class-name value])
+  (RT/baseLoader)
+  (let [ class (Class/forName (name class-name) )]
+    (if (vector? value)
+      (Reflector/invokeConstructor class (to-array value))
+      (if (map? value )
+        (Reflector/invokeStaticMethod class "create" value)
+        (throw (Exception. "constructor value not a vector or map."))))))
+(in-ns 'user)
+(r/read-constructor ['user.foo []])
+(p/parse-string "[]")
+(r/read-codn (p/parse-string "[]"))
+(r/read-codn x)
+(r/read-constructor ['user.foo []])
+(r/read-constructor '[user.foo []])
+(in-ns 'codn.reader.core)
+(defn read-constructor [[class-name value]]
+  (RT/baseLoader)
+  (let [ class (Class/forName (name class-name) )]
+    (if (vector? value)
+      (do  (println [class value])
+           (Reflector/invokeConstructor class (to-array value)))
+      (if (map? value )
+        (Reflector/invokeStaticMethod class "create" value)
+        (throw (Exception. "constructor value not a vector or map."))))))
+(in-ns 'user)
+(r/read-constructor '[user.foo []])
+(r/read-codn x)
+(in-ns 'codn.reader.core)
+(defn read-constructor [[class-name value]]
+  (RT/baseLoader)
+  (let [ class (Class/forName (name class-name) )]
+    (if (vector? value)
+      (do  (def xx [class value])
+           (Reflector/invokeConstructor class (to-array value)))
+      (if (map? value )
+        (Reflector/invokeStaticMethod class "create" value)
+        (throw (Exception. "constructor value not a vector or map."))))))
+(in-ns 'user)
+ (r/read-codn x)
+r/xx
+(r/read-constructor xx)
+(r/read-constructor r/xx)
+r/xx
+(name user.foo)
+(class user.foo)
+(in-ns 'codn.reader.core)
+(defn read-constructor [[class-name value]]
+  (RT/baseLoader)
+  (let [ class (if (class? class-name) class (Class/forName (name class-name) ))]
+    (if (vector? value)
+      (do  (def xx [class value])
+           (Reflector/invokeConstructor class (to-array value)))
+      (if (map? value )
+        (Reflector/invokeStaticMethod class "create" value)
+        (throw (Exception. "constructor value not a vector or map."))))))
+(in-ns 'user)
+(r/read-codn x)
+x
+(r/read-constructor r/xx)
+(in-ns 'codn.reader.core)
+(defn read-constructor [[class-name value]]
+  (RT/baseLoader)
+  (let [ class (if (class? class-name) class-name (Class/forName (name class-name) ))]
+    (if (vector? value)
+      (do  (def xx [class value])
+           (Reflector/invokeConstructor class (to-array value)))
+      (if (map? value )
+        (Reflector/invokeStaticMethod class "create" value)
+        (throw (Exception. "constructor value not a vector or map."))))))
+(in-ns 'user)
+(r/read-constructor r/xx)
+(class? 'user.foo)
+(class? user.foo)
+r/xx
+(in-ns 'codn.reader.core)
+(defn read-constructor [[class-name value]]
+  (RT/baseLoader)
+  (let [ class (if (class? class-name) class-name (Class/forName (name class-name) ))]
+    (if (vector? value)
+      (do  (def xx [class value])
+           (Reflector/invokeConstructor class (to-array value)))
+      (if (map? value )
+        (Reflector/invokeStaticMethod class "create" value)
+        (throw (Exception. "constructor value not a vector or map."))))))
+(in-ns 'user)
+x
+(r/read-codn x)
+r/xx
+(first xx)
+(first r/xx)
+(class (first r/xx))
+(class? (first r/xx))
+(clojure.lang.Reflector/invokeConstructor (first r/xx) (to-array []))
+(clojure.lang.Reflector/invokeConstructor (first r/xx) (to-array (last r/xx)))
+(in-ns 'codn.reader.core)
+(defn read-constructor [[class-name value]]
+  (RT/baseLoader)
+  (let [ class (if (class? class-name) class-name (Class/forName (name class-name) ))]
+    (if (vector? value)
+      (do  (def xxx [class value])
+           (Reflector/invokeConstructor class (to-array value)))
+      (if (map? value )
+        (Reflector/invokeStaticMethod class "create" value)
+        (throw (Exception. "constructor value not a vector or map."))))))
+(in-ns 'user)
+(r/read-codn x)
+r/xxx
+(clojure.lang.Reflector/invokeConstructor (first r/xxx) (to-array (last r/xxx)))
+[(clojure.lang.Reflector/invokeConstructor (first r/xxx) (to-array (last r/xxx)))]
+(in-ns 'codn.reader.core)
+RT
+Reflector
+(map? (foo.))
+(in-ns 'user)
+(map? (foo.))
+(record? (foo.))
+(class {})
+(class (hash-map 1 2))
+({clojure.lang.PersistentArrayMap clojure.lang.PersistentHashMap} (class (hash-map 1 2)))
+({'clojure.lang.PersistentArrayMap 'clojure.lang.PersistentHashMap} (class (hash-map 1 2)))
+(#{'clojure.lang.PersistentArrayMap 'clojure.lang.PersistentHashMap} (class (hash-map 1 2)))
+(#{clojure.lang.PersistentArrayMap clojure.lang.PersistentHashMap} (class (hash-map 1 2)))
+(in-ns 'codn.reader.core)
+(defn un-edn [x]
+  (if (not (#{clojure.lang.PersistentArrayMap clojure.lang.PersistentHashMap} (class x)))
+    x
+    (if (:value x)
+      (:value x)
+      (make-expr (:head x) (:body x)))))
+(in-ns 'user)
+(r/read-codn x)
+postwalk
+(in-ns 'codn.reader.core)
+postwalk
+foo
+(defrecord foo [])
+(postwalk identity [(foo.)])
+(use 'codn.reader.core)
+read-constructor
+(defrecord foo [])
+(read-constructor user.foo [])
+(read-constructor [user.foo []])
+(read-constructor [user.foo {}])
+(read-constructor [user.foo {:a 1}])
+(in-ns 'codn.reader.core)
+(defn read-constructor [[class-name value]]
+  (RT/baseLoader)
+  (let [ class (if (class? class-name) class-name (Class/forName (name class-name) ))]
+    (if (vector? value)
+      (do  (def xxx [class value])
+           (Reflector/invokeConstructor class (to-array value)))
+      (if (map? value )
+        (Reflector/invokeStaticMethod class "create" (object-array [value]))
+        (throw (Exception. "constructor value not a vector or map."))))))
+(read-constructor [user.foo {}])
+(require '[codn.parser.core :as p])
+(require '[codn.reader.core :as r])
+(p/parse-string "^String 'x")
+(r/read-codn (p/parse-string "^String 'x"))
+r/desugar-meta
+(in-ns 'r)
+(in-ns 'codn.reader.core)
+desugar-meta
+(desugar-meta 'String)
+(with-meta (desugar-meta 'String) {})
+(with-meta (desugar-meta 'String) 'x)
+^String 'x
+(meta ^String 'x)
+(read-string "^String 'x")
+(clojure.core/read-string "^String 'x")
+(meta (clojure.core/read-string "^String 'x"))
+(meta ^String (quote x))
+(meta ^String '(quote x))
+(clojure.core/read-string "'x")
+(in-ns 'user)
+(r/read-codn (p/parse-string "'x"))
+(r/read-codn (p/parse-string "^:foo 'x"))
+(with-meta {:tag :foo} '())
+(meta ^String '(quote x))
+(with-meta {:tag :foo} '(quote x))
+(read-string  "^:foo 'bar")
+(meta (read-string  "^:foo 'bar"))
+(with-meta {:foo true} (quote bar))
+(with-meta {:foo true} '(quote bar))
+(with-meta (quote bar) {:foo true})
+(meta (with-meta '(quote bar) {:foo true}))
+^{:foo true} {:a 1}
+(meta ^{:foo true} {:a 1})
+(meta (empty ^{:foo true} {:a 1}))
+(require '[codn.reader.core :as r])
+(require '[codn.parser.core :as p])
+(p/parse-string "^{:foo true} {}")
+(r/read-codn (p/parse-string "^{:foo true} {}"))
+(meta (r/read-codn (p/parse-string "^{:foo true} {}")))
+(meta (r/read-codn (p/parse-string "^{:foo true} 'a")))
+(meta (r/read-codn (p/parse-string "^{:foo true} '()")))
+(meta (r/read-codn (p/parse-string "^{:foo true} '(f)")))
+(meta (r/read-codn (p/parse-string "^{:foo true} '[]")))
+(meta (r/read-codn (p/parse-string "^{:foo true} []")))
+(meta (r/read-codn (p/parse-string "^{:foo true} a")))
+(meta (r/read-codn (p/parse-string "^{:foo true} ()")))
+(meta (r/read-codn (p/parse-string "^{:foo true} '()")))
+(with-meta '() {:tag foo})
+(with-meta '() {:tag :foo})
+(meta (with-meta '() {:tag :foo}))
+(read-string "^{:foo true} '()")
+(meta (read-string "^{:foo true} '()"))
+(meta (r/read-codn (p/parse-string "^{:foo true} '()")))
+(meta (r/read-codn (p/parse-string "^{:foo true} (quote ())")))
+(meta (read-string "^{:foo true} ()"))
+(meta (r/read-codn (p/parse-string "^{:foo true}  ()")))
+(p/parse-string "^{:foo true}  ()")
+(apply list [])
+(with-meta (apply list []) {:tag :foo})
+(meta (with-meta (apply list []) {:tag :foo}))
+(empty '(1 2 3))
+(into (empty '(1 2 3)) [1 2 3])
+(seq? '())
+(list? '())
