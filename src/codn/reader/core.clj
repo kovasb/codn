@@ -209,11 +209,7 @@
     :regex (re-pattern (first body))
     :ratio (apply / body)
     :meta (with-meta (second body) (desugar-meta (first body)))
-
-
     (throw (Exception. (str "Unknown codn head: " head)))))
-
-
 
 
 (defn un-edn [x]
@@ -230,7 +226,6 @@
 (defn get-slot [s]
   (if (= '%& s) :rest (Integer/parseInt (subs (name s) 1))))
 
-;; want [:slot 1] etc
 
 (defn- garg2 [n]
   (symbol (str (if (= :rest n) "rest" (str "p" n))
@@ -303,18 +298,3 @@
      (postwalk
            #(un-fn-postwalk % fn-slots)
            (postwalk un-edn expr)))))
-
-(comment
-
-
-  (not (=  ))
-
-(clojure.core/seq (clojure.core/concat (clojure.core/list 1) (clojure.core/list (clojure.core/seq (clojure.core/concat (clojure.core/list 2) (3))))))
-
-(clojure.core/seq (clojure.core/concat (clojure.core/list 1) (clojure.core/list (clojure.core/seq (clojure.core/concat (clojure.core/list (clojure.core/seq (clojure.core/concat (clojure.core/list (quote clojure.core/unquote)) (clojure.core/list 2)))) (3))))))
-
-(= (quote (clojure.core/seq (clojure.core/concat (clojure.core/list 1) (clojure.core/list (clojure.core/seq (clojure.core/concat (clojure.core/list 2) (3))))))) (parse-read-string "`(1 (~2 ~@(3)))"))
-
-(clojure.core/seq (clojure.core/concat (clojure.core/list 1) (clojure.core/list (clojure.core/seq (clojure.core/concat (clojure.core/list 2) (3))))))
-
-  )
