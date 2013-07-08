@@ -5,7 +5,7 @@ clojure source code as EDN data
 
 notes:
 - this is WIP in both design and implementation, but passes all the tests inherited from tools.reader
-- the current implementation is franksteined off of clojure.tools.reader (Thanks!) and neither elegant or consistent
+- the current implementation is frankenstein-ed off of clojure.tools.reader (Thanks!) and neither elegant or consistent
 - look in the test/codn/parser directory for more examples 
 
 ## Rationale
