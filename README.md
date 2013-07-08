@@ -24,6 +24,7 @@ The objectives of codn are:
 
 - represent clojure source code as pure EDN data
 - provide a basis for source code analysis
+- provide a basis for implementing sub-codeqs in codeq
 - provide a basis for multipass analysis and compilation
 - provide a safe, analyzable basis for code exchange in distributed systems
 - cleanly interoperate with term rewriting / tree transformation libraries
