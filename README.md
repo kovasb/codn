@@ -38,7 +38,7 @@ Codn provides facilities for parsing source code into the codn format, and for r
 
 load parser namespace:
 
-    (require '[codn.parser.core :as p]
+    (require '[codn.parser.core :as p])
 
 Primitives return a form {:head primitive-type-keyword :value primitive-value}
 
@@ -68,7 +68,7 @@ Reader macros and other non-EDN syntaxes are parsed into compound structures, di
 
 load reader namespace:
 
-    (require '[codn.reader.core :as r]
+    (require '[codn.reader.core :as r])
 
     (r/read-codn '{:head :vector, :body [{:head :symbol, :value a}]})
     => [a]
