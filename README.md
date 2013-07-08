@@ -34,6 +34,10 @@ It is a non-objective of codn to provide isomorphic representation of textual do
 
 Codn provides facilities for parsing source code into the codn format, and for reading codn data into their corresponding runtime structures.
 
+Add codn to your project dependencies:
+
+    [codn/codn "0.1.0-SNAPSHOT"]
+
 ### Parsing
 
 load parser namespace:
